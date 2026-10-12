@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111"><title>Diecast Garage</title>
+<style>
+:root{--bg:#0b0b0d;--panel:#17171b;--line:#2b2b31;--orange:#ff7417;--muted:#a5a5ad;--text:#f7f7f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:11px 14px;font-weight:700;background:var(--orange);color:#111}button.secondary{background:#28282e;color:#fff;border:1px solid var(--line)}button:disabled{opacity:.5;cursor:wait}.wrap{max-width:1000px;margin:auto;padding:16px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:12px 0 18px}.brand{font-weight:900;font-size:22px;letter-spacing:.3px}.brand span{color:var(--orange)}.muted{color:var(--muted)}.hidden{display:none!important}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:16px 0}.actions{display:flex;gap:8px;flex-wrap:wrap}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tabs button.active{background:var(--orange);color:#111}.tabs button:not(.active){background:#222227;color:#ddd}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}.car{background:#202025;border:1px solid var(--line);border-radius:13px;overflow:hidden}.car img{width:100%;height:125px;object-fit:cover;background:#111}.car .info{padding:10px}.car h3{font-size:15px;margin:0 0 5px}.car p{font-size:12px;color:var(--muted);margin:3px 0}.field{display:grid;gap:6px;margin:10px 0}.field input,.field select{width:100%;padding:12px;border-radius:9px;border:1px solid #3a3a42;background:#0e0e11;color:#fff}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 12px}.notice{padding:12px;border-radius:10px;background:#292016;color:#ffd4b4;margin:12px 0;white-space:pre-wrap}.userrow{display:flex;align-items:center;gap:12px}.avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#333}.empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed #393940;border-radius:12px}.small{font-size:12px}.car .actions{padding:0 10px 10px}.car .actions button{font-size:12px;padding:7px 9px}
+</style>
+</head>
+<body><main class="wrap">
+<header class="top"><div class="brand">🏁 DIECAST <span>GARAGE</span><div class="muted small">Your collection. Your community.</div></div><div id="authTop"><button id="signIn">Sign in with Google</button></div></header>
+<div id="status" class="notice">Connect to the internet and sign in to open your garage.</div>
+<section id="app" class="hidden">
+<div class="panel"><div class="userrow"><img id="avatar" class="avatar" alt=""><div style="flex:1"><strong id="welcome">Welcome</strong><div id="email" class="muted small"></div></div><button class="secondary" id="signOut">Sign out</button></div>
+<div class="formgrid"><label class="field">Garage username<input id="username" maxlength="28" placeholder="e.g. VishalDiecast"></label><label class="field">Bio (optional)<input id="bio" maxlength="100" placeholder="Collector of 1:64 cars"></label></div><button id="saveProfile">Save profile</button></div>
+<nav class="tabs"><button class="active" data-tab="my">My Garage</button><button data-tab="community">Community</button><button data-tab="add">＋ Add a car</button></nav>
+<section id="myTab"><div class="panel"><h2>My Garage</h2><div id="myCount" class="muted small"></div><div id="myCars" class="grid"></div></div></section>
+<section id="communityTab" class="hidden"><div class="panel"><h2>Community Garages</h2><p class="muted small">Public profiles and car collections from other Diecast Garage members.</p><div id="community"></div></div></section>
+<section id="addTab" class="hidden"><div class="panel"><h2 id="formTitle">Add a car</h2><form id="carForm"><input id="carId" type="hidden"><div class="formgrid">
+<label class="field">Car name *<input id="carName" required maxlength="80" placeholder="e.g. BMW M4 GT3"></label>
+<label class="field">Brand<input id="carBrand" maxlength="50" placeholder="Hot Wheels, Matchbox, Mini GT..."></label>
+<label class="field">Scale<select id="carScale"><option>1:64</option><option>1:43</option><option>1:32</option><option>1:24</option><option>1:18</option><option>Other</option></select></label>
+<label class="field">Series / edition<input id="carSeries" maxlength="80" placeholder="Mainline, Premium, etc."></label>
+<label class="field">Year<input id="carYear" type="number" min="1900" max="2100" placeholder="2026"></label>
+<label class="field">Condition<select id="carCondition"><option>Mint</option><option>Loose</option><option>Carded</option><option>Used</option></select></label>
+<label class="field">Photo (optional)<input id="carPhoto" type="file" accept="image/*"></label>
+</div><div id="photoHint" class="muted small">Tip: use a clear photo. Images are resized before saving.</div><div class="actions" style="margin-top:14px"><button type="submit" id="saveCar">Save car</button><button type="button" class="secondary" id="cancelEdit">Cancel</button></div></form></div></section>
+</section>
+<footer class="muted small" style="padding:16px 0">Diecast Garage • Made for collectors • Never share passwords or private account details.</footer>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+ apiKey: "AIzaSyCFXw0krCFOIFCbQGMqO_86TgutKtZSMzs",
+ authDomain: "diecast-garage-4a300.firebaseapp.com",
+ projectId: "diecast-garage-4a300",
+ storageBucket: "diecast-garage-4a300.firebasestorage.app",
+ messagingSenderId: "240098404101",
+ appId: "1:240098404101:web:39eefd46bff2590019f96c",
+ measurementId: "G-W12G56Q1EC"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.firestore();
+const $=id=>document.getElementById(id);
+let currentUser=null, cars=[], profile={}, photoData="", activeTab="my", stopCommunity=null;
+function status(msg){$("status").textContent=msg;$("status").classList.remove("hidden")}
+function clearStatus(){$("status").classList.add("hidden")}
+function esc(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function showTab(tab){activeTab=tab;["my","community","add"].forEach(t=>{$(t+"Tab").classList.toggle("hidden",t!==tab);document.querySelector('[data-tab="'+t+'"]').classList.toggle("active",t===tab)});if(tab==="community")loadCommunity()}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+$("signIn").onclick=async()=>{try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(e){try{await auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider())}catch(err){status("Sign-in failed: "+(err.message||err))}}};
+auth.getRedirectResult().catch(e=>status("Sign-in issue: "+e.message));
+$("signOut").onclick=()=>auth.signOut();
+auth.onAuthStateChanged(async user=>{
+ currentUser=user;
+ $("authTop").classList.toggle("hidden",!!user);$("app").classList.toggle("hidden",!user);
+ if(!user){if(stopCommunity)stopCommunity();cars=[];status("Sign in with Google to open your garage.");return}
+ clearStatus();$("avatar").src=user.photoURL||"";$("welcome").textContent="Welcome, "+(user.displayName||"Collector");$("email").textContent=user.email||"";
+ try{const snap=await db.collection("users").doc(user.uid).get();profile=snap.exists?snap.data():{};$("username").value=profile.username||((user.displayName||"Collector").replace(/\s+/g,""));$("bio").value=profile.bio||"";await saveProfile(false);await loadCars()}catch(e){status("Firebase setup needed: "+e.message+"\nCheck that Firestore is created and the security rules are installed.")}
+});
+async function saveProfile(show=true){if(!currentUser)return;const username=$("username").value.trim()||(currentUser.displayName||"Collector");const bio=$("bio").value.trim();const data={uid:currentUser.uid,username:username.slice(0,28),bio:bio.slice(0,100),displayName:currentUser.displayName||"",photoURL:currentUser.photoURL||"",updatedAt:firebase.firestore.FieldValue.serverTimestamp()};await db.collection("users").doc(currentUser.uid).set(data,{merge:true});profile={...profile,...data};if(show)status("Profile saved.");}
+$("saveProfile").onclick=()=>saveProfile().catch(e=>status("Could not save profile: "+e.message));
+async function loadCars(){const snap=await db.collection("users").doc(currentUser.uid).collection("cars").orderBy("createdAt","desc").get();cars=snap.docs.map(d=>({id:d.id,...d.data()}));renderCars()}
+function renderCars(){ $("myCount").textContent=cars.length+" car"+(cars.length===1?"":"s") +" in your garage";const root=$("myCars");root.innerHTML="";if(!cars.length){root.innerHTML='<div class="empty" style="grid-column:1/-1">Your garage is empty. Tap “＋ Add a car” to start collecting.</div>';return}cars.forEach(c=>{const el=document.createElement("article");el.className="car";el.innerHTML=(c.photo?'<img src="'+c.photo+'" alt="Car photo">':'<div style="height:125px;display:grid;place-items:center;font-size:42px;background:#111">🏎️</div>')+'<div class="info"><h3>'+esc(c.name)+'</h3><p>'+esc(c.brand||"Diecast")+' · '+esc(c.scale||"1:64")+'</p><p>'+esc(c.series||"")+(c.year?" · "+esc(c.year):"")+'</p><p>'+esc(c.condition||"")+'</p></div><div class="actions"><button class="secondary" data-edit="'+c.id+'">Edit</button><button class="secondary" data-delete="'+c.id+'">Delete</button></div>';root.appendChild(el)});root.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editCar(b.dataset.edit));root.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteCar(b.dataset.delete))}
+async function compressImage(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const max=700,scale=Math.min(1,max/Math.max(im.width,im.height));const cv=document.createElement("canvas");cv.width=Math.round(im.width*scale);cv.height=Math.round(im.height*scale);cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);resolve(cv.toDataURL("image/jpeg",.72))};im.onerror=reject;im.src=r.result};r.onerror=reject;r.readAsDataURL(file)})}
+$("carPhoto").onchange=async e=>{const f=e.target.files[0];if(!f){photoData="";return}if(f.size>8*1024*1024){status("Choose a photo under 8 MB.");e.target.value="";return}try{photoData=await compressImage(f);$("photoHint").textContent="Photo ready to save."}catch(err){status("Could not read photo.")}};
+$("carForm").onsubmit=async e=>{e.preventDefault();if(!currentUser)return;const btn=$("saveCar");btn.disabled=true;btn.textContent="Saving...";try{const id=$("carId").value;const data={name:$("carName").value.trim(),brand:$("carBrand").value.trim(),scale:$("carScale").value,series:$("carSeries").value.trim(),year:$("carYear").value?Number($("carYear").value):null,condition:$("carCondition").value,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};if(photoData)data.photo=photoData;else if(!id)data.photo="";const ref=db.collection("users").doc(currentUser.uid).collection("cars");if(id){await ref.doc(id).set(data,{merge:true})}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await ref.add(data)}$("carForm").reset();$("carId").value="";photoData="";$("formTitle").textContent="Add a car";$("photoHint").textContent="Tip: use a clear photo. Images are resized before saving.";await loadCars();showTab("my");status("Car saved successfully!")}catch(err){status("Could not save car: "+err.message+"\nIf it mentions permissions, check the Firestore rules. If it mentions document size, use a smaller photo.")}finally{btn.disabled=false;btn.textContent="Save car"}};
+function editCar(id){const c=cars.find(x=>x.id===id);if(!c)return;$("carId").value=id;$("carName").value=c.name||"";$("carBrand").value=c.brand||"";$("carScale").value=c.scale||"1:64";$("carSeries").value=c.series||"";$("carYear").value=c.year||"";$("carCondition").value=c.condition||"Mint";photoData="";$("formTitle").textContent="Edit car";showTab("add")}
+$("cancelEdit").onclick=()=>{ $("carForm").reset();$("carId").value="";photoData="";$("formTitle").textContent="Add a car";showTab("my")};
+async function deleteCar(id){if(!confirm("Delete this car from your garage?"))return;try{await db.collection("users").doc(currentUser.uid).collection("cars").doc(id).delete();await loadCars();status("Car deleted.")}catch(e){status("Could not delete car: "+e.message)}}
+async function loadCommunity(){const root=$("community");root.innerHTML='<div class="muted">Loading public garages…</div>';try{if(stopCommunity)stopCommunity();stopCommunity=db.collection("users").onSnapshot(async snap=>{root.innerHTML="";const users=snap.docs.filter(d=>d.id!==currentUser.uid).map(d=>({id:d.id,...d.data()}));if(!users.length){root.innerHTML='<div class="empty">No other collectors yet. Share Diecast Garage with friends!</div>';return}for(const u of users){const section=document.createElement("div");section.className="panel";section.innerHTML='<div class="userrow"><img class="avatar" src="'+esc(u.photoURL||"")+'" alt=""><div><strong>'+esc(u.username||u.displayName||"Collector")+'</strong><div class="muted small">'+esc(u.bio||"Diecast collector")+'</div></div></div><div class="muted small" style="margin:12px 0" id="count-'+esc(u.id)+'">Loading collection…</div><div class="grid" id="cars-'+esc(u.id)+'"></div>';root.appendChild(section);try{const cs=await db.collection("users").doc(u.id).collection("cars").orderBy("createdAt","desc").get();section.querySelector("#count-"+CSS.escape(u.id)).textContent=cs.size+" cars";const cr=section.querySelector("#cars-"+CSS.escape(u.id));cs.forEach(doc=>{const c=doc.data(),card=document.createElement("div");card.className="car";card.innerHTML=(c.photo?'<img src="'+c.photo+'" alt="Car photo">':'<div style="height:100px;display:grid;place-items:center;font-size:34px;background:#111">🏎️</div>')+'<div class="info"><h3>'+esc(c.name)+'</h3><p>'+esc(c.brand||"Diecast")+' · '+esc(c.scale||"1:64")+'</p><p>'+esc(c.series||"")+'</p></div>';cr.appendChild(card)});if(!cs.size)cr.innerHTML='<div class="muted small">No cars shared yet.</div>'}catch(e){}}},e=>{root.innerHTML='<div class="notice">Could not load community: '+esc(e.message)+'</div>'})}catch(e){root.innerHTML='<div class="notice">'+esc(e.message)+'</div>'}}
+</script></body></html>
